@@ -1,0 +1,12 @@
+pyramid
+pyramid_zodbconn
+transaction
+pyramid_tm
+pyramid_debugtoolbar
+ZODB3
+waitress
+jinja2<2.7
+pymongo
+pyramid_jinja2
+cryptacular
+pil

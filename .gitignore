@@ -1,0 +1,9 @@
+# Ignore data files #
+#####################
+
+Data.fs*
+
+# Ignore temporary files #
+##########################
+
+*~
