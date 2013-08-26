@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import pymongo
 import json
+import re
 
 from bson.objectid import ObjectId
 
@@ -19,6 +20,7 @@ def get_table(collection, start=None, end=None, numpoints=10):
     if not end:
         end = collection.find().sort('_id', pymongo.ASCENDING)[100000]['_id']
     print str(start) + ", " + str(end)
+    print start.tzinfo
     
     # time interval to average the values over
     interval = (end - start)/numpoints
@@ -41,6 +43,9 @@ def get_averages(collection, start, end):
     temp = 0.0
     cursor = collection.find({'_id': {'$gte': start, '$lt': end}})
     num = cursor.count()
+    if num <= 0:
+        print "Error: No points found"
+        return []
     for entry in cursor:
         weight += entry['weight']
         temp += entry['temp']
@@ -50,5 +55,12 @@ def get_averages(collection, start, end):
     return ret
     
 def get_datetime(dtstr):
-    return datetime.strptime(dtstr.replace('GMT+0000', ''), 
+    m = re.search('GMT([+-])(\d{2})(\d{2}) ', dtstr)
+    offset_mins = (int(m.groups()[1]))*60 + int(m.groups()[2])
+    # If the time is added, it's a negative the offset, otherwise keep as a 
+    #   positive number
+    if m.groups()[0] == '+':
+        offset_mins *= -1 
+    usertime = datetime.strptime(re.sub(r'GMT[+-]\d{4} ', '', dtstr), 
                                 '%a %b %d %Y %H:%M:%S (%Z)')
+    return usertime + timedelta(minutes=offset_mins)
